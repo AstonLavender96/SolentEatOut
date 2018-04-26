@@ -23,7 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".addrestaurant" android:label="@string/addrest">
+        <activity android:name=".Addrestaurant" android:label="@string/addrest">
 
         </activity>
     </application>

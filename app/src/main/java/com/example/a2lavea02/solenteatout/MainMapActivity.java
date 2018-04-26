@@ -15,6 +15,8 @@ import android.view.MenuInflater;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.OverlayItem;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -22,9 +24,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainMapActivity extends AppCompatActivity implements LocationListener {
+
+    ItemizedIconOverlay<OverlayItem> items;
+    ItemizedIconOverlay.OnItemGestureListener<OverlayItem> markerGestureListener;
+    double lon = 50.9097;
+    double lat = 1.4044;
     MapView mv;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_map);
 
@@ -36,6 +44,19 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
 
         LocationManager mgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
+        markerGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+            public boolean onItemLongPress(int i, OverlayItem item) {
+                Toast.makeText(MainMapActivity.this, item.getSnippet(), Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+            public boolean onItemSingleTapUp(int i, OverlayItem item) {
+                Toast.makeText(MainMapActivity.this, item.getSnippet(), Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        };
+        items = new ItemizedIconOverlay<OverlayItem>(this, new ArrayList<OverlayItem>(), markerGestureListener);
     }
 
     public void onLocationChanged(Location newLoc) {
@@ -70,10 +91,31 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
         }
             if (item.getItemId() == R.id.addrestaurant) {
                 // react to the menu being selected.
-                Intent intent = new Intent(this, addrestaurant.class);
+                Intent intent = new Intent(this, Addrestaurant.class);
                 startActivityForResult(intent, 0);
                 return true;
             }
             return false;
+        // save menu item that saves all markers...
+        // load menu item to load all markers....
         }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent intent){
+        if(requestCode == 0){
+            if(resultCode == RESULT_OK) {
+                Bundle extras = intent.getExtras();
+
+                String stringrestname = extras.getString("com.example.a2lavea02.solenteatout.RestName");
+                String stringrestadd = extras.getString("com.example.a2lavea02.solenteatout.RestAdd");
+                String stringcuisine = extras.getString("com.example.a2lavea02.solenteatout.RestCuisine");
+                String stringrating = extras.getString("com.example.a2lavea02.solenteatout.RestRating");
+
+
+                OverlayItem addnewRestaurant = new OverlayItem(stringrestname, stringrestadd, new GeoPoint(lat, lon));
+                items.addItem(addnewRestaurant);
+                mv.getOverlays().add(items);
+            }
+
+        }
+    }
     }

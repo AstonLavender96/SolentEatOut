@@ -13,18 +13,22 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.view.MenuInflater;
 
+import android.widget.Button;
+import android.view.View.OnClickListener;
+
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
-public class addrestaurant extends AppCompatActivity implements View.OnClickListener {
+public class Addrestaurant extends AppCompatActivity implements View.OnClickListener {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_restaurant);
 
+        Button addbutton = (Button) findViewById(R.id.btnAddRest);
+        addbutton.setOnClickListener(this);
     }
     public void onClick(View view){
-
 
         Intent intent = new Intent();
         Bundle bundle = new Bundle();
@@ -44,6 +48,9 @@ public class addrestaurant extends AppCompatActivity implements View.OnClickList
         bundle.putString("com.example.a2lavea02.solenteatout.RestCuisine", stringcuisine);
         bundle.putString("com.example.a2lavea02.solenteatout.RestRating", stringrating);
         // create an onactivityresult within the main activity.
+        intent.putExtras(bundle);
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
 
