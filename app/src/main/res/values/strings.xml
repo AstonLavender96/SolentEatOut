@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Solent Eat Out</string>
-    <string name="mainactivity">Main map</string>
+
     <string name="addrestaurant">Add a restaurant!</string>
     <string name="addrest">Add a restaurant</string>
     <string name="rest_name">Restaurant name</string>

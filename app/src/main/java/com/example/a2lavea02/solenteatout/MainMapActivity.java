@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 import android.view.MenuInflater;
+import org.osmdroid.config.Configuration;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
@@ -25,11 +26,11 @@ import java.util.ArrayList;
 
 public class MainMapActivity extends AppCompatActivity implements LocationListener {
 
+    MapView mv;
     ItemizedIconOverlay<OverlayItem> items;
     ItemizedIconOverlay.OnItemGestureListener<OverlayItem> markerGestureListener;
-    double lon = 50.9097;
-    double lat = 1.4044;
-    MapView mv;
+    double lon = -1.4047;
+    double lat = 50.9097;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -40,10 +41,9 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
         mv.setBuiltInZoomControls(true);
 
         mv.getController().setZoom(14);
-        mv.getController().setCenter(new GeoPoint(51.8361, -0.4577));
+        mv.getController().setCenter(new GeoPoint(50.9097, -1.4047));
 
-        LocationManager mgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
 
         markerGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
             public boolean onItemLongPress(int i, OverlayItem item) {
@@ -57,6 +57,8 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
             }
         };
         items = new ItemizedIconOverlay<OverlayItem>(this, new ArrayList<OverlayItem>(), markerGestureListener);
+        LocationManager mgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
     }
 
     public void onLocationChanged(Location newLoc) {
@@ -83,12 +85,6 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
 
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if (item.getItemId() == R.id.mainactivity) {
-            // react to the menu being selected.
-            Intent intent = new Intent(this, MainMapActivity.class);
-            startActivityForResult(intent, 0);
-            return true;
-        }
             if (item.getItemId() == R.id.addrestaurant) {
                 // react to the menu being selected.
                 Intent intent = new Intent(this, Addrestaurant.class);
@@ -110,9 +106,9 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
                 String stringcuisine = extras.getString("com.example.a2lavea02.solenteatout.RestCuisine");
                 String stringrating = extras.getString("com.example.a2lavea02.solenteatout.RestRating");
 
+                OverlayItem addaRestaurant = new OverlayItem(stringrestname, stringrestadd, new GeoPoint(lat, lon));
+                items.addItem(addaRestaurant);
 
-                OverlayItem addnewRestaurant = new OverlayItem(stringrestname, stringrestadd, new GeoPoint(lat, lon));
-                items.addItem(addnewRestaurant);
                 mv.getOverlays().add(items);
             }
 
