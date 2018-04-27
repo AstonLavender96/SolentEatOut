@@ -1,14 +1,17 @@
 package com.example.a2lavea02.solenteatout;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.Toast;
 import android.view.MenuInflater;
 import org.osmdroid.config.Configuration;
@@ -21,7 +24,9 @@ import org.osmdroid.views.overlay.OverlayItem;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class MainMapActivity extends AppCompatActivity implements LocationListener {
@@ -90,6 +95,22 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
                 Intent intent = new Intent(this, Addrestaurant.class);
                 startActivityForResult(intent, 0);
                 return true;
+            }
+            else if(item.getItemId() == R.id.save_all){
+                if(item.getItemId()== R.id.save_all)
+                {
+                    try
+                    {
+                        PrintWriter pw = new PrintWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/addedrestaurants.txt"));
+                        EditText sl1 = (EditText)findViewById(R.id.sl1);
+                        pw.println(sl1.getText().toString());
+                        pw.close();
+                    }
+                    catch(IOException e)
+                    {
+                        new AlertDialog.Builder(this).setMessage("Error Loading: " + e).setPositiveButton("Dismiss", null).show();
+                    }
+                }
             }
             return false;
         // save menu item that saves all markers...
