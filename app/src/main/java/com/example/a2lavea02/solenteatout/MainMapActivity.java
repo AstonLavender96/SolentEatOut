@@ -52,12 +52,12 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
 
         markerGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
             public boolean onItemLongPress(int i, OverlayItem item) {
-                Toast.makeText(MainMapActivity.this, item.getSnippet(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainMapActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
                 return true;
             }
 
             public boolean onItemSingleTapUp(int i, OverlayItem item) {
-                Toast.makeText(MainMapActivity.this, item.getSnippet(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainMapActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
                 return true;
             }
         };
@@ -97,20 +97,21 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
                 return true;
             }
             else if(item.getItemId() == R.id.save_all){
-                if(item.getItemId()== R.id.save_all)
-                {
                     try
                     {
                         PrintWriter pw = new PrintWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/addedrestaurants.txt"));
-                        EditText sl1 = (EditText)findViewById(R.id.sl1);
-                        pw.println(sl1.getText().toString());
+
+                        items.size();
+
                         pw.close();
                     }
                     catch(IOException e)
                     {
                         new AlertDialog.Builder(this).setMessage("Error Loading: " + e).setPositiveButton("Dismiss", null).show();
                     }
-                }
+            }
+            else if(item.getItemId() == R.id.load_all){
+
             }
             return false;
         // save menu item that saves all markers...
@@ -127,7 +128,7 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
                 String stringcuisine = extras.getString("com.example.a2lavea02.solenteatout.RestCuisine");
                 String stringrating = extras.getString("com.example.a2lavea02.solenteatout.RestRating");
 
-                OverlayItem addaRestaurant = new OverlayItem(stringrestname, stringrestadd, new GeoPoint(lat, lon));
+                OverlayItem addaRestaurant = new OverlayItem(stringrestname, stringrestadd, new GeoPoint(mv.getMapCenter().getLatitude() , mv.getMapCenter().getLongitude()));
                 items.addItem(addaRestaurant);
 
                 mv.getOverlays().add(items);
