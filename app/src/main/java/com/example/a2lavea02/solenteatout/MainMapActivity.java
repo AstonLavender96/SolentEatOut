@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,9 +24,13 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.OverlayItem;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
@@ -88,7 +93,8 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
         return true;
     }
 
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected (MenuItem item)  {
+
 
             if (item.getItemId() == R.id.addrestaurant) {
                 // react to the menu being selected.
@@ -99,19 +105,56 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
             else if(item.getItemId() == R.id.save_all){
                     try
                     {
-                        PrintWriter pw = new PrintWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/addedrestaurants.txt"));
 
-                        items.size();
+                            PrintWriter pw = new PrintWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/addedrestaurants.csv"));
+                            int restdetails = items.size();
+                            for(int a = 0; a < restdetails; a++){
+                                OverlayItem marker = items.getItem(a);
+                                pw.append(marker.getTitle() + ", " + marker.getSnippet() + ", " + marker.getPoint().getLatitude() + ", " + marker.getPoint().getLongitude() + "\n");
+                            }
 
-                        pw.close();
+                            pw.close();
+
                     }
                     catch(IOException e)
                     {
                         new AlertDialog.Builder(this).setMessage("Error Loading: " + e).setPositiveButton("Dismiss", null).show();
                     }
             }
-            else if(item.getItemId() == R.id.load_all){
+            else if(item.getItemId() == R.id.load_all)
+            {
 
+                try {
+                    StringBuilder file = new StringBuilder();
+                    FileReader fr = new FileReader(Environment.getExternalStorageDirectory().getAbsolutePath() + "/addedrestaurants.csv");
+                    BufferedReader reader = new BufferedReader(fr);
+                    String line = "";
+                    while((line = reader.readLine()) != null)
+                    {
+                        String[] details = line.split(",");
+                        System.out.println("Help3");
+                        try {
+                            Double lat = Double.parseDouble(details[2]);
+                            Double lon = Double.parseDouble(details[3]);
+
+                            OverlayItem newitem = new OverlayItem(details[0], details[1], new GeoPoint(lat, lon));
+                            items.addItem(newitem);
+                            System.out.println(newitem);
+                            System.out.println("Help444444444");
+                        }
+                        catch(Exception ex)
+                        {
+                            new AlertDialog.Builder(this).setMessage("Error Loading: " + ex).setPositiveButton("Dismiss", null).show();
+                        }
+                    }
+
+
+                }
+                catch (IOException e)
+                {
+                    new AlertDialog.Builder(this).setMessage("Error Loading: " + e).setPositiveButton("Dismiss", null).show();
+                }
+                mv.getOverlays().add(items);
             }
             return false;
         // save menu item that saves all markers...
