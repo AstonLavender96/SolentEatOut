@@ -156,6 +156,11 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
                 }
                 mv.getOverlays().add(items);
             }
+            else if(item.getItemId() == R.id.choose_preference){
+                Intent intent = new Intent(this, Preference.class);
+                startActivityForResult(intent, 0);
+                return true;
+            }
             return false;
         // save menu item that saves all markers...
         // load menu item to load all markers....
