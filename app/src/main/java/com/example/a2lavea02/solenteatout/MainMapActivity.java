@@ -3,11 +3,13 @@ package com.example.a2lavea02.solenteatout;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -15,6 +17,10 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 import android.view.MenuInflater;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.osmdroid.config.Configuration;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -32,6 +38,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class MainMapActivity extends AppCompatActivity implements LocationListener {
@@ -41,12 +50,12 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
     ItemizedIconOverlay.OnItemGestureListener<OverlayItem> markerGestureListener;
     double lon = -1.4047;
     double lat = 50.9097;
+    boolean saveOnResume ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_map);
-
         mv = (MapView) findViewById(R.id.map1);
         mv.setBuiltInZoomControls(true);
 
@@ -69,6 +78,8 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
         items = new ItemizedIconOverlay<OverlayItem>(this, new ArrayList<OverlayItem>(), markerGestureListener);
         LocationManager mgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
+        saveOnResume = false;
     }
 
     public void onLocationChanged(Location newLoc) {
@@ -105,7 +116,6 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
             else if(item.getItemId() == R.id.save_all){
                     try
                     {
-
                             PrintWriter pw = new PrintWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/addedrestaurants.csv"));
                             int restdetails = items.size();
                             for(int a = 0; a < restdetails; a++){
@@ -139,7 +149,7 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
 
                             OverlayItem newitem = new OverlayItem(details[0], details[1], new GeoPoint(lat, lon));
                             items.addItem(newitem);
-                            System.out.println(newitem);
+
                             System.out.println("Help444444444");
                         }
                         catch(Exception ex)
@@ -159,12 +169,46 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
             else if(item.getItemId() == R.id.choose_preference){
                 Intent intent = new Intent(this, Preference.class);
                 startActivityForResult(intent, 0);
-                return true;
+                saveOnResume = true;
+            }
+            else if(item.getItemId() == R.id.load_web)
+            {
+                String name=null;
+                LoadWeb lw = new LoadWeb();
+                lw.execute(name);
             }
             return false;
         // save menu item that saves all markers...
         // load menu item to load all markers....
         }
+        public void onResume(){
+            super.onResume();
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            //boolean autosave = prefs.getBoolean("autosave", true);
+           // String Auto_Save = prefs.getString("", "");
+            if(saveOnResume == false)
+            {
+                try
+                {
+
+                    PrintWriter pw = new PrintWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/addedrestaurants.csv"));
+                    int restdetails = items.size();
+                    for(int a = 0; a < restdetails; a++){
+                        OverlayItem marker = items.getItem(a);
+                        pw.append(marker.getTitle() + ", " + marker.getSnippet() + ", " + marker.getPoint().getLatitude() + ", " + marker.getPoint().getLongitude() + "\n");
+                    }
+
+                    pw.close();
+
+                }
+                catch(Exception e)
+                {
+                    new AlertDialog.Builder(this).setMessage("Error Loading: " + e).setPositiveButton("Dismiss", null).show();
+                }
+            }
+
+        }
+
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent){
         if(requestCode == 0){
@@ -181,6 +225,60 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
 
                 mv.getOverlays().add(items);
             }
+
+        }
+    }
+    class LoadWeb extends AsyncTask<String, Void, String> {
+        public String doInBackground(String... name) {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL("http://www.free-map.org.uk/course/mad/ws/get.php?year=18&username=user002&format=json" + URLEncoder.encode(name[0], "UTF-8"));
+                conn = (HttpURLConnection) url.openConnection();
+                InputStream in = conn.getInputStream();
+                EditText et = (EditText) findViewById(R.id.sl1);
+                if (conn.getResponseCode() == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                    String result = "", line;
+                    while ((line = br.readLine()) != null) {
+                        result += line + "\n";
+                    }
+                    return result;
+                } else {
+                    return "HTTP ERROR:" + conn.getResponseCode();
+                }
+            } catch (IOException e) {
+                return e.toString();
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            }
+        }
+    }
+    public void onPostExecute(String result)
+    {
+        try
+        {
+            JSONArray jsonArr = new JSONArray (result);
+            String rName, rAddress;
+            String item="";
+
+            for(int i=0; i<jsonArr.length(); i++)
+            {
+                OverlayItem dlmarker = items.getItem(i);
+
+                JSONObject curRest = jsonArr.getJSONObject(i);
+                String name = curRest.getString("name"),
+                        address = curRest.getString("address");
+                        lon = curRest.getDouble("lon");
+                        lat = curRest.getDouble("lat");
+                item += dlmarker.getTitle() + ", " + dlmarker.getSnippet() +  dlmarker.getPoint().getLatitude() + dlmarker.getPoint().getLatitude() + "\n";
+
+                mv.getOverlays().add(items);
+            }
+        }
+        catch(JSONException je)
+        {
 
         }
     }

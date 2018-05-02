@@ -4,6 +4,6 @@
     <item android:id="@+id/save_all" android:title="@string/save_all"/>
     <item android:id="@+id/load_all" android:title="@string/load_all"/>
     <item android:id="@+id/choose_preference" android:title="@string/choose_pref"/>
-
+    <item android:id="@+id/load_web" android:title="@string/load_web"/>
 
 </menu>

@@ -5,6 +5,7 @@
     <string name="addrestaurant">Add a restaurant</string>
     <string name="addrest">Add a restaurant</string>
     <string name="choose_pref">Choose preference</string>
+    <string name="load_web">Load files from web</string>
     <string name="rest_name">Restaurant name</string>
     <string name="rest_address">Restaurant Address</string>
     <string name="add_rest">Add Restaurant</string>
