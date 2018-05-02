@@ -174,6 +174,7 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
             else if(item.getItemId() == R.id.load_web)
             {
                 String name=null;
+                EditText et = (EditText) findViewById(R.id.sl1);
                 LoadWeb lw = new LoadWeb();
                 lw.execute(name);
             }
@@ -184,26 +185,24 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
         public void onResume(){
             super.onResume();
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            //boolean autosave = prefs.getBoolean("autosave", true);
+            boolean autosave = prefs.getBoolean("autosave", true);
            // String Auto_Save = prefs.getString("", "");
-            if(saveOnResume == false)
-            {
-                try
-                {
+            if(items != null) {
+                if (autosave) {
+                    try {
 
-                    PrintWriter pw = new PrintWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/addedrestaurants.csv"));
-                    int restdetails = items.size();
-                    for(int a = 0; a < restdetails; a++){
-                        OverlayItem marker = items.getItem(a);
-                        pw.append(marker.getTitle() + ", " + marker.getSnippet() + ", " + marker.getPoint().getLatitude() + ", " + marker.getPoint().getLongitude() + "\n");
+                        PrintWriter pw = new PrintWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/addedrestaurants.csv"));
+                        int restdetails = items.size();
+                        for (int a = 0; a < restdetails; a++) {
+                            OverlayItem marker = items.getItem(a);
+                            pw.append(marker.getTitle() + ", " + marker.getSnippet() + ", " + marker.getPoint().getLatitude() + ", " + marker.getPoint().getLongitude() + "\n");
+                        }
+
+                        pw.close();
+
+                    } catch (Exception e) {
+                        new AlertDialog.Builder(this).setMessage("Error Loading: " + e).setPositiveButton("Dismiss", null).show();
                     }
-
-                    pw.close();
-
-                }
-                catch(Exception e)
-                {
-                    new AlertDialog.Builder(this).setMessage("Error Loading: " + e).setPositiveButton("Dismiss", null).show();
                 }
             }
 
@@ -224,18 +223,20 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
                 items.addItem(addaRestaurant);
 
                 mv.getOverlays().add(items);
+                mv.invalidate();
             }
 
         }
     }
-    class LoadWeb extends AsyncTask<String, Void, String> {
+    static class LoadWeb extends AsyncTask<String, Void, String> {
         public String doInBackground(String... name) {
             HttpURLConnection conn = null;
             try {
-                URL url = new URL("http://www.free-map.org.uk/course/mad/ws/get.php?year=18&username=user002&format=json" + URLEncoder.encode(name[0], "UTF-8"));
+                URL url = new URL("http://www.free-map.org.uk/course/mad/ws/get.php?year=18&username=user002&format=json&name=" + URLEncoder.encode(name[0],"UTF-8"));
+                System.out.println(url);
                 conn = (HttpURLConnection) url.openConnection();
                 InputStream in = conn.getInputStream();
-                EditText et = (EditText) findViewById(R.id.sl1);
+                //EditText et = (EditText) findViewById(R.id.sl1);
                 if (conn.getResponseCode() == 200) {
                     BufferedReader br = new BufferedReader(new InputStreamReader(in));
                     String result = "", line;
@@ -272,7 +273,7 @@ public class MainMapActivity extends AppCompatActivity implements LocationListen
                         address = curRest.getString("address");
                         lon = curRest.getDouble("lon");
                         lat = curRest.getDouble("lat");
-                item += dlmarker.getTitle() + ", " + dlmarker.getSnippet() +  dlmarker.getPoint().getLatitude() + dlmarker.getPoint().getLatitude() + "\n";
+                item += dlmarker.getTitle() + ", " + dlmarker.getSnippet() +  dlmarker.getPoint().getLongitude() + dlmarker.getPoint().getLatitude() + "\n";
 
                 mv.getOverlays().add(items);
             }
